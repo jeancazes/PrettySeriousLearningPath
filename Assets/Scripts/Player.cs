@@ -11,6 +11,7 @@ public class Player : MonoBehaviour
     [SerializeField] float jumpSpeed = 10f;
     [SerializeField] float climbSpeed = 5f;
     [SerializeField] Vector2 deathkick = new Vector2(100f,8f);
+    [SerializeField] float distanceRayon = 2f;
 
     //State
     bool isAlive = true;
@@ -21,6 +22,12 @@ public class Player : MonoBehaviour
     CapsuleCollider2D myBodyCollider;
     BoxCollider2D myFeet;
     float gravityScaleAtStart;
+    //SpriteRenderer myEchelleVis;
+
+    //essai de grab par raycast (qui tire pas droit ??)
+    bool grabbed =false;
+    RaycastHit2D hit;
+    public Transform holdPoint;
 
     // Start is called before the first frame update
     void Start()
@@ -30,7 +37,6 @@ public class Player : MonoBehaviour
         myBodyCollider = GetComponent<CapsuleCollider2D>();
         gravityScaleAtStart = myRigidBody.gravityScale;
         myFeet = GetComponent<BoxCollider2D>();
-
     }
 
     // Update is called once per frame
@@ -49,6 +55,67 @@ public class Player : MonoBehaviour
         GestionAnimations();
         Die();
 
+        if (CrossPlatformInputManager.GetButtonDown("Fire2"))
+        {
+            grabbed = false;
+            hit.collider.gameObject.transform.position = transform.position;
+        }
+
+            if (CrossPlatformInputManager.GetButtonDown("Interact"))
+        {
+            print("EEE");
+            if (!grabbed)
+            {
+                Physics2D.queriesStartInColliders = false;
+
+                hit = Physics2D.Raycast(transform.position, Vector2.right * transform.localScale.x,distanceRayon);
+
+                if (hit.collider != null)
+                {
+                    grabbed = true;
+
+                }
+                else
+                {
+                    grabbed = false;
+                    hit.collider.gameObject.transform.position = transform.position;
+
+                }
+
+
+
+            }
+
+            
+        }
+
+        if (grabbed)
+            {
+                print("grabbing!!!");
+                hit.collider.gameObject.transform.position = holdPoint.position;
+
+            }
+
+    }
+
+    //private void OnTriggerEnter(Collider other)
+    //{
+    //    if (!myBodyCollider.IsTouchingLayers(LayerMask.GetMask("Ladder")))
+    //    {
+    //        if (CrossPlatformInputManager.GetButtonDown("Interact"))
+    //        {
+    //            Destroy(echelle);
+    //            myEchelleVis.enabled = true;
+
+    //        }
+    //    }
+
+
+    //}
+
+    private void PoseEchelle(Collider echelle)
+    {
+        
     }
 
     private void Climb()
@@ -173,7 +240,11 @@ public class Player : MonoBehaviour
 
     }
 
-
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.green;
+        Gizmos.DrawLine(transform.position, transform.position + Vector3.right * transform.localScale.x * distanceRayon);
+    }
 
 
 }   
