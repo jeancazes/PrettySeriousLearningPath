@@ -18,7 +18,9 @@ public class Player : MonoBehaviour
     [SerializeField] GameObject holdingPoint;
     [SerializeField] float dep2X = 0.5f;
     [SerializeField] float dep2Y = 0.5f;
+    [SerializeField] float fatigueFactor = 1f;
     int  lesCollisions = 0;
+    float keyPressed;
 
     //State
     bool isAlive = true;
@@ -47,7 +49,6 @@ public class Player : MonoBehaviour
         gravityScaleAtStart = myRigidBody.gravityScale;
         myFeet = GetComponent<BoxCollider2D>();
         GameObject lechelle = GameObject.FindGameObjectWithTag("Echelle");
-        print(lechelle.name);
     }
 
     // Update is called once per frame
@@ -64,6 +65,8 @@ public class Player : MonoBehaviour
         Jump();
         Climb();
         GestionAnimations();
+        CompteFatigue();
+        //print("la fatigue est de " + Fatigue());
         Die();
         Grab();
 
@@ -77,7 +80,7 @@ public class Player : MonoBehaviour
 
         //if (CrossPlatformInputManager.GetButtonDown("Interact"))
         //{
-        //    print("EEE");
+        //
         //    if (!grabbed)
         //    {
         //        Physics2D.queriesStartInColliders = false;
@@ -105,12 +108,14 @@ public class Player : MonoBehaviour
 
         //if (grabbed)
         //    {
-        //        print("grabbing!!!");
+        // 
         //        hit.collider.gameObject.transform.position = holdPoint.position;
 
         //    }
 
     }
+
+
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -120,7 +125,7 @@ public class Player : MonoBehaviour
     private void OnCollisionExit2D(Collision2D collision)
     {
         lesCollisions--;
-        print(lesCollisions);
+
     }
 
     private void Grab()
@@ -129,7 +134,7 @@ public class Player : MonoBehaviour
         {
             if (CrossPlatformInputManager.GetButtonDown("Interact"))
             {
-                print("FFF");
+
                 grabbed = false;
                GameObject lechelle = GameObject.FindGameObjectWithTag("Echelle");
                 lechelle.transform.parent = null;
@@ -149,7 +154,7 @@ public class Player : MonoBehaviour
         {
             if (CrossPlatformInputManager.GetButtonDown("Interact"))
             {
-                print("EEE");
+
                 grabbed = true;
                 
                 GameObject lechelle = GameObject.FindGameObjectWithTag("Echelle");
@@ -322,5 +327,19 @@ public class Player : MonoBehaviour
     //    Gizmos.DrawLine(transform.position, transform.position + Vector3.right * transform.localScale.x * distanceRayon);
     //}
 
+    private void CompteFatigue()
+    {
+        if (Input.anyKey)
+        {
+            keyPressed ++ ;
+        }
+        
+    }
 
+    public int Fatigue()
+    {
+        int fatigue = Mathf.RoundToInt(keyPressed * fatigueFactor);
+        return fatigue;
+        
+    }
 }
