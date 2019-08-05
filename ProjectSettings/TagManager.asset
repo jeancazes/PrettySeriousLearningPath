@@ -4,7 +4,8 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Fire
+  - Echelle
+  - Jumpable
   layers:
   - Default
   - TransparentFX
@@ -19,9 +20,9 @@ TagManager:
   - Ground
   - Ladder
   - Background
-  - 
-  - 
-  - 
+  - Platforms
+  - Objects
+  - Cameras
   - 
   - 
   - 
@@ -47,6 +48,9 @@ TagManager:
     locked: 0
   - name: Ground
     uniqueID: 1506896189
+    locked: 0
+  - name: Platforms
+    uniqueID: 603685773
     locked: 0
   - name: Ladder
     uniqueID: 623297395

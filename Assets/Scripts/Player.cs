@@ -10,8 +10,15 @@ public class Player : MonoBehaviour
     [SerializeField] float playerSpeed = 5f;
     [SerializeField] float jumpSpeed = 10f;
     [SerializeField] float climbSpeed = 5f;
-    [SerializeField] Vector2 deathkick = new Vector2(100f,8f);
-    [SerializeField] float distanceRayon = 2f;
+    [SerializeField] Vector2 deathkick = new Vector2(100f, 8f);
+    // [SerializeField] float distanceRayon = 2f;
+    [SerializeField] float depX = 0.5f;
+    [SerializeField] float depY = 0.5f;
+    [SerializeField] float rotZ = 15f;
+    [SerializeField] GameObject holdingPoint;
+    [SerializeField] float dep2X = 0.5f;
+    [SerializeField] float dep2Y = 0.5f;
+    int  lesCollisions = 0;
 
     //State
     bool isAlive = true;
@@ -23,11 +30,13 @@ public class Player : MonoBehaviour
     BoxCollider2D myFeet;
     float gravityScaleAtStart;
     //SpriteRenderer myEchelleVis;
+    GameObject lechelle;
+
 
     //essai de grab par raycast (qui tire pas droit ??)
-    bool grabbed =false;
-    RaycastHit2D hit;
-    public Transform holdPoint;
+    bool grabbed = false;
+    //RaycastHit2D hit;
+    //public Transform holdPoint;
 
     // Start is called before the first frame update
     void Start()
@@ -37,6 +46,7 @@ public class Player : MonoBehaviour
         myBodyCollider = GetComponent<CapsuleCollider2D>();
         gravityScaleAtStart = myRigidBody.gravityScale;
         myFeet = GetComponent<BoxCollider2D>();
+        GameObject lechelle = GameObject.FindGameObjectWithTag("Echelle");
     }
 
     // Update is called once per frame
@@ -54,48 +64,102 @@ public class Player : MonoBehaviour
         Climb();
         GestionAnimations();
         Die();
-
-        if (CrossPlatformInputManager.GetButtonDown("Fire2"))
-        {
-            grabbed = false;
-            hit.collider.gameObject.transform.position = transform.position;
-        }
-
-            if (CrossPlatformInputManager.GetButtonDown("Interact"))
-        {
-            print("EEE");
-            if (!grabbed)
-            {
-                Physics2D.queriesStartInColliders = false;
-
-                hit = Physics2D.Raycast(transform.position, Vector2.right * transform.localScale.x,distanceRayon);
-
-                if (hit.collider != null)
-                {
-                    grabbed = true;
-
-                }
-                else
-                {
-                    grabbed = false;
-                    hit.collider.gameObject.transform.position = transform.position;
-
-                }
+        Grab();
 
 
 
-            }
+        //if (CrossPlatformInputManager.GetButtonDown("Fire2"))
+        //{
+        //    grabbed = false;
+        //    hit.collider.gameObject.transform.position = transform.position;
+        //}
 
-            
-        }
+        //if (CrossPlatformInputManager.GetButtonDown("Interact"))
+        //{
+        //    print("EEE");
+        //    if (!grabbed)
+        //    {
+        //        Physics2D.queriesStartInColliders = false;
 
+        //        hit = Physics2D.Raycast(transform.position, Vector2.right * transform.localScale.x,distanceRayon);
+
+        //        if (hit.collider != null)
+        //        {
+        //            grabbed = true;
+
+        //        }
+        //        else
+        //        {
+        //            grabbed = false;
+        //            hit.collider.gameObject.transform.position = transform.position;
+
+        //        }
+
+
+
+        //    }
+
+
+        //}
+
+        //if (grabbed)
+        //    {
+        //        print("grabbing!!!");
+        //        hit.collider.gameObject.transform.position = holdPoint.position;
+
+        //    }
+
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        lesCollisions++;
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        lesCollisions--;
+        print(lesCollisions);
+    }
+
+    private void Grab()
+    {
         if (grabbed)
+        {
+            if (CrossPlatformInputManager.GetButtonDown("Fire2"))
             {
-                print("grabbing!!!");
-                hit.collider.gameObject.transform.position = holdPoint.position;
+                print("FFF");
+                grabbed = false;
+                GameObject lechelle = GameObject.FindGameObjectWithTag("Echelle");
+                lechelle.transform.parent = null;
+                lechelle.transform.Rotate(new Vector3(0, 0, -rotZ));
+                lechelle.transform.localPosition = new Vector2(transform.position.x - dep2X, transform.position.y - dep2Y);
 
+                lechelle.GetComponent<BoxCollider2D>().enabled = true;
+            }
+        }
+
+
+        if (!myBodyCollider.IsTouchingLayers(LayerMask.GetMask("Ladder")))
+        {
+            return;
+        }
+        else
+        {
+            if (CrossPlatformInputManager.GetButtonDown("Interact"))
+            {
+                print("EEE");
+                grabbed = true;
+                print("grabed");
+                //GameObject lechelle = GameObject.FindGameObjectWithTag("Echelle");
+                lechelle.transform.parent = holdingPoint.transform;
+                lechelle.transform.localPosition = new Vector2(depX, depY);
+                lechelle.transform.Rotate(new Vector3(0, 0, rotZ));
+                lechelle.GetComponent<BoxCollider2D>().enabled = false;
             }
 
+
+        }
     }
 
     //private void OnTriggerEnter(Collider other)
@@ -115,7 +179,7 @@ public class Player : MonoBehaviour
 
     private void PoseEchelle(Collider echelle)
     {
-        
+
     }
 
     private void Climb()
@@ -138,9 +202,16 @@ public class Player : MonoBehaviour
         bool playerHasVerticalSpeed = Mathf.Abs(myRigidBody.velocity.y) > Mathf.Epsilon;
 
         myAnimator.SetBool("Climbing", playerHasVerticalSpeed);
-            
-       
 
+        //if (playerHasVerticalSpeed)
+        //{
+        //    if (myRigidBody.velocity.y <= 0)
+        //    {
+        //        // permettre au Player de traverser la plateforme vers le bas
+        //        // - on peut pas couper le rigibody ou le 
+        //    }
+
+        //}
     }
 
     private void Run()
@@ -168,7 +239,7 @@ public class Player : MonoBehaviour
 
         if (playerHasHorizontalSpeed)
         {
-           transform.localScale = new Vector2(Mathf.Sign(myRigidBody.velocity.x), 1f);
+            transform.localScale = new Vector2(Mathf.Sign(myRigidBody.velocity.x), 1f);
         }
 
 
@@ -177,7 +248,8 @@ public class Player : MonoBehaviour
 
     private void GestionAnimations()
     {
-        if (!myFeet.IsTouchingLayers(LayerMask.GetMask("Ground")) && !myFeet.IsTouchingLayers(LayerMask.GetMask("Ladder")))
+        //if (!myFeet.IsTouchingLayers(LayerMask.GetMask("Ground")) && !myFeet.IsTouchingLayers(LayerMask.GetMask("Platforms")) && !myFeet.IsTouchingLayers(LayerMask.GetMask("Ladder")) && !myFeet.IsTouchingLayers(LayerMask.GetMask("Objects")) )
+        if(lesCollisions<=0)
         {
             bool playerHasVerticalSpeed = Mathf.Abs(myRigidBody.velocity.y) > Mathf.Epsilon;
 
@@ -211,21 +283,23 @@ public class Player : MonoBehaviour
     }
 
     private void Jump()
+    {
+
+        //if (myFeet.IsTouchingLayers(LayerMask.GetMask("Ground")) || myFeet.IsTouchingLayers(LayerMask.GetMask("Platforms")) || myFeet.IsTouchingLayers(LayerMask.GetMask("Ladder")) || myFeet.IsTouchingLayers(LayerMask.GetMask("Objects")))
+        if(lesCollisions>0)
+
         {
-
-            if (!myFeet.IsTouchingLayers(LayerMask.GetMask("Ground")))
-            {
-                return;
-            }
-
             if (CrossPlatformInputManager.GetButtonDown("Jump"))
             {
                 Vector2 jumpVelocityToAdd = new Vector2(0f, jumpSpeed);
                 myRigidBody.velocity += jumpVelocityToAdd;
                 myAnimator.SetBool("Jumping", true);
             }
-
         }
+
+
+
+    }
 
     public void Die()
     {
@@ -240,11 +314,11 @@ public class Player : MonoBehaviour
 
     }
 
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.green;
-        Gizmos.DrawLine(transform.position, transform.position + Vector3.right * transform.localScale.x * distanceRayon);
-    }
+    //private void OnDrawGizmos()
+    //{
+    //    Gizmos.color = Color.green;
+    //    Gizmos.DrawLine(transform.position, transform.position + Vector3.right * transform.localScale.x * distanceRayon);
+    //}
 
 
-}   
+}
