@@ -19,8 +19,8 @@ public class Player : MonoBehaviour
     [SerializeField] float dep2X = 0.5f;
     [SerializeField] float dep2Y = 0.5f;
     [SerializeField] float fatigueFactor = 1f;
-    int  lesCollisions = 0;
-    float keyPressed;
+    int lesCollisions = 0;
+    public float keyPressed;
 
     //State
     bool isAlive = true;
@@ -136,7 +136,7 @@ public class Player : MonoBehaviour
             {
 
                 grabbed = false;
-               GameObject lechelle = GameObject.FindGameObjectWithTag("Echelle");
+                GameObject lechelle = GameObject.FindGameObjectWithTag("Echelle");
                 lechelle.transform.parent = null;
                 lechelle.transform.rotation = Quaternion.identity;
                 lechelle.transform.localPosition = new Vector2(transform.position.x - dep2X, transform.position.y - dep2Y);
@@ -156,7 +156,7 @@ public class Player : MonoBehaviour
             {
 
                 grabbed = true;
-                
+
                 GameObject lechelle = GameObject.FindGameObjectWithTag("Echelle");
                 lechelle.transform.parent = holdingPoint.transform;
                 lechelle.transform.localPosition = new Vector2(depX, depY);
@@ -256,7 +256,7 @@ public class Player : MonoBehaviour
     private void GestionAnimations()
     {
         //if (!myFeet.IsTouchingLayers(LayerMask.GetMask("Ground")) && !myFeet.IsTouchingLayers(LayerMask.GetMask("Platforms")) && !myFeet.IsTouchingLayers(LayerMask.GetMask("Ladder")) && !myFeet.IsTouchingLayers(LayerMask.GetMask("Objects")) )
-        if(lesCollisions<=0)
+        if (lesCollisions <= 0)
         {
             bool playerHasVerticalSpeed = Mathf.Abs(myRigidBody.velocity.y) > Mathf.Epsilon;
 
@@ -293,7 +293,7 @@ public class Player : MonoBehaviour
     {
 
         //if (myFeet.IsTouchingLayers(LayerMask.GetMask("Ground")) || myFeet.IsTouchingLayers(LayerMask.GetMask("Platforms")) || myFeet.IsTouchingLayers(LayerMask.GetMask("Ladder")) || myFeet.IsTouchingLayers(LayerMask.GetMask("Objects")))
-        if(lesCollisions>0)
+        if (lesCollisions > 0)
 
         {
             if (CrossPlatformInputManager.GetButtonDown("Jump"))
@@ -331,15 +331,34 @@ public class Player : MonoBehaviour
     {
         if (Input.anyKey)
         {
-            keyPressed ++ ;
+            keyPressed++;
         }
-        
+
     }
 
     public int Fatigue()
     {
         int fatigue = Mathf.RoundToInt(keyPressed * fatigueFactor);
         return fatigue;
-        
+
+    }
+
+    public void FillingStamina()
+    {
+        StartCoroutine (Remplissage());
+    }
+
+    IEnumerator Remplissage()
+    {
+        float jsuiscrevé = keyPressed;
+        print("fatigue key = "+jsuiscrevé);
+        for (int i = 0; i < jsuiscrevé; i++)
+        {
+            keyPressed = Mathf.RoundToInt(keyPressed - 3);
+            print(keyPressed);
+            print("i=" + i);
+            yield return new WaitForSeconds(.1f);
+
+        }
     }
 }
