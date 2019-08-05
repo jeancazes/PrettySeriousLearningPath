@@ -10,8 +10,10 @@ public class Player : MonoBehaviour
     [SerializeField] float playerSpeed = 5f;
     [SerializeField] float jumpSpeed = 10f;
     [SerializeField] float climbSpeed = 5f;
+    [SerializeField] public int staminaMax = 1000;
+    [SerializeField] public int staminaCurrent;
     [SerializeField] Vector2 deathkick = new Vector2(100f, 8f);
-    // [SerializeField] float distanceRayon = 2f;
+
     [SerializeField] float depX = 0.5f;
     [SerializeField] float depY = 0.5f;
     [SerializeField] float rotZ = 15f;
@@ -31,14 +33,9 @@ public class Player : MonoBehaviour
     CapsuleCollider2D myBodyCollider;
     BoxCollider2D myFeet;
     float gravityScaleAtStart;
-    //SpriteRenderer myEchelleVis;
-    public GameObject lechelle;
-
-
-    //essai de grab par raycast (qui tire pas droit ??)
+    GameObject lechelle;
     bool grabbed = false;
-    //RaycastHit2D hit;
-    //public Transform holdPoint;
+
 
     // Start is called before the first frame update
     void Start()
@@ -49,6 +46,7 @@ public class Player : MonoBehaviour
         gravityScaleAtStart = myRigidBody.gravityScale;
         myFeet = GetComponent<BoxCollider2D>();
         GameObject lechelle = GameObject.FindGameObjectWithTag("Echelle");
+        staminaCurrent = staminaMax;
     }
 
     // Update is called once per frame
@@ -64,59 +62,21 @@ public class Player : MonoBehaviour
         FlipSprite();
         Jump();
         Climb();
+        Grab();
         GestionAnimations();
         CompteFatigue();
-        //print("la fatigue est de " + Fatigue());
         Die();
-        Grab();
 
+        if (Input.GetKeyDown("h"))
+        {
 
-
-        //if (CrossPlatformInputManager.GetButtonDown("Fire2"))
-        //{
-        //    grabbed = false;
-        //    hit.collider.gameObject.transform.position = transform.position;
-        //}
-
-        //if (CrossPlatformInputManager.GetButtonDown("Interact"))
-        //{
-        //
-        //    if (!grabbed)
-        //    {
-        //        Physics2D.queriesStartInColliders = false;
-
-        //        hit = Physics2D.Raycast(transform.position, Vector2.right * transform.localScale.x,distanceRayon);
-
-        //        if (hit.collider != null)
-        //        {
-        //            grabbed = true;
-
-        //        }
-        //        else
-        //        {
-        //            grabbed = false;
-        //            hit.collider.gameObject.transform.position = transform.position;
-
-        //        }
-
-
-
-        //    }
-
-
-        //}
-
-        //if (grabbed)
-        //    {
-        // 
-        //        hit.collider.gameObject.transform.position = holdPoint.position;
-
-        //    }
+            FillingStamina(600);
+        }
 
     }
 
 
-
+    //Compter les collisions pour être sur que je ne suis sur rien...
     private void OnCollisionEnter2D(Collision2D collision)
     {
         lesCollisions++;
@@ -127,6 +87,9 @@ public class Player : MonoBehaviour
         lesCollisions--;
 
     }
+
+    // Pour attrapper et relacher l'echelle
+    // des améliorations à apporter (pas toujours bien en place !)
 
     private void Grab()
     {
@@ -168,26 +131,8 @@ public class Player : MonoBehaviour
         }
     }
 
-    //private void OnTriggerEnter(Collider other)
-    //{
-    //    if (!myBodyCollider.IsTouchingLayers(LayerMask.GetMask("Ladder")))
-    //    {
-    //        if (CrossPlatformInputManager.GetButtonDown("Interact"))
-    //        {
-    //            Destroy(echelle);
-    //            myEchelleVis.enabled = true;
-
-    //        }
-    //    }
-
-
-    //}
-
-    private void PoseEchelle(Collider echelle)
-    {
-
-    }
-
+    // pour monter à l'échelle
+    // -- on peut toujours pas sauter de l'échelle
     private void Climb()
     {
 
@@ -209,16 +154,6 @@ public class Player : MonoBehaviour
 
         myAnimator.SetBool("Climbing", playerHasVerticalSpeed);
 
-        //if (playerHasVerticalSpeed)
-        //{
-        //    if (myRigidBody.velocity.y <= 0)
-        //    {
-        //        // permettre au Player de traverser la plateforme vers le bas
-        //        // - on peut pas couper le rigibody 
-        //        // - On peut essayer en inversant l'angle du platform effector et en le rendant actif que contre le player
-        //    }
-
-        //}
     }
 
     private void Run()
@@ -292,7 +227,7 @@ public class Player : MonoBehaviour
     private void Jump()
     {
 
-        //if (myFeet.IsTouchingLayers(LayerMask.GetMask("Ground")) || myFeet.IsTouchingLayers(LayerMask.GetMask("Platforms")) || myFeet.IsTouchingLayers(LayerMask.GetMask("Ladder")) || myFeet.IsTouchingLayers(LayerMask.GetMask("Objects")))
+        
         if (lesCollisions > 0)
 
         {
@@ -321,11 +256,7 @@ public class Player : MonoBehaviour
 
     }
 
-    //private void OnDrawGizmos()
-    //{
-    //    Gizmos.color = Color.green;
-    //    Gizmos.DrawLine(transform.position, transform.position + Vector3.right * transform.localScale.x * distanceRayon);
-    //}
+   
 
     private void CompteFatigue()
     {
@@ -334,31 +265,61 @@ public class Player : MonoBehaviour
             keyPressed++;
         }
 
-    }
-
-    public int Fatigue()
-    {
         int fatigue = Mathf.RoundToInt(keyPressed * fatigueFactor);
-        return fatigue;
+        //mettre ici les malus d'efforts supplémentaires 
+        staminaCurrent = staminaMax - fatigue;
 
     }
 
-    public void FillingStamina()
+    public int Stamina()
     {
-        StartCoroutine (Remplissage());
+        return staminaCurrent;
     }
 
-    IEnumerator Remplissage()
+    public void FillingStamina(int staminaBoost)
     {
-        float jsuiscrevé = keyPressed;
-        print("fatigue key = "+jsuiscrevé);
-        for (int i = 0; i < jsuiscrevé; i++)
-        {
-            keyPressed = Mathf.RoundToInt(keyPressed - 3);
-            print(keyPressed);
-            print("i=" + i);
-            yield return new WaitForSeconds(.1f);
-
-        }
+        keyPressed = 0;
+        staminaCurrent = Mathf.Clamp((staminaCurrent + staminaBoost), 0, staminaMax);
+        Debug.Log("-----------------------------------------Stamina = " + staminaCurrent);
     }
+
+    //public void FillingStamina(int staminaBoost)
+    //{
+    //    Coroutine co;
+    //    co = StartCoroutine(Remplissage(staminaBoost));
+    //}
+
+    //public IEnumerator Remplissage(int staminaBoost)
+    //{
+
+    //    int staminaMaxProv = staminaCurrent + staminaBoost;
+
+    //        while (staminaCurrent<staminaMaxProv)
+    //        {
+    //        staminaCurrent++;
+    //        yield return new WaitForSeconds(.1f);
+    //        }
+
+    //}
+
+    
+
+    //public void StopFillingStamina
+    //{
+    //    StopCoroutine(co);
+    //}
+
+    //public IEnumerator Remplissage(staminaBoost)
+    //{
+
+    //    print("fatigue key = " + jsuiscrevé);
+    //    while (staminaCurrent <= staminaMax)
+    //    {
+
+    //        print(keyPressed);
+    //        print("i=" + i);
+    //        yield return new WaitForSeconds(.1f);
+
+    //    }
+    //}
 }

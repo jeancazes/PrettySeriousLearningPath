@@ -6,11 +6,9 @@ using UnityEngine.UI;
 public class AfficheFatigue : MonoBehaviour
 {
 
-    [SerializeField] int quantiteEnergie;
     [SerializeField] GameObject leJoueur;
     Slider leSlider;
-
-    int fatigue;
+    int staminaCurrent;
 
 
     // Start is called before the first frame update
@@ -24,9 +22,9 @@ public class AfficheFatigue : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        fatigue = leJoueur.GetComponent<Player>().Fatigue();
-        print (fatigue);
-        leSlider.value = quantiteEnergie - fatigue;
+        staminaCurrent = leJoueur.GetComponent<Player>().Stamina();
+        print (message: "The current stamina is = "+ staminaCurrent);
+        leSlider.value = staminaCurrent;
         
 
 
