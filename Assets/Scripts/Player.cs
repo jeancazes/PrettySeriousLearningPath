@@ -30,7 +30,7 @@ public class Player : MonoBehaviour
     BoxCollider2D myFeet;
     float gravityScaleAtStart;
     //SpriteRenderer myEchelleVis;
-    GameObject lechelle;
+    public GameObject lechelle;
 
 
     //essai de grab par raycast (qui tire pas droit ??)
@@ -47,6 +47,7 @@ public class Player : MonoBehaviour
         gravityScaleAtStart = myRigidBody.gravityScale;
         myFeet = GetComponent<BoxCollider2D>();
         GameObject lechelle = GameObject.FindGameObjectWithTag("Echelle");
+        print(lechelle.name);
     }
 
     // Update is called once per frame
@@ -126,13 +127,13 @@ public class Player : MonoBehaviour
     {
         if (grabbed)
         {
-            if (CrossPlatformInputManager.GetButtonDown("Fire2"))
+            if (CrossPlatformInputManager.GetButtonDown("Interact"))
             {
                 print("FFF");
                 grabbed = false;
-                GameObject lechelle = GameObject.FindGameObjectWithTag("Echelle");
+               GameObject lechelle = GameObject.FindGameObjectWithTag("Echelle");
                 lechelle.transform.parent = null;
-                lechelle.transform.Rotate(new Vector3(0, 0, -rotZ));
+                lechelle.transform.rotation = Quaternion.identity;
                 lechelle.transform.localPosition = new Vector2(transform.position.x - dep2X, transform.position.y - dep2Y);
 
                 lechelle.GetComponent<BoxCollider2D>().enabled = true;
@@ -150,8 +151,8 @@ public class Player : MonoBehaviour
             {
                 print("EEE");
                 grabbed = true;
-                print("grabed");
-                //GameObject lechelle = GameObject.FindGameObjectWithTag("Echelle");
+                
+                GameObject lechelle = GameObject.FindGameObjectWithTag("Echelle");
                 lechelle.transform.parent = holdingPoint.transform;
                 lechelle.transform.localPosition = new Vector2(depX, depY);
                 lechelle.transform.Rotate(new Vector3(0, 0, rotZ));
@@ -208,7 +209,8 @@ public class Player : MonoBehaviour
         //    if (myRigidBody.velocity.y <= 0)
         //    {
         //        // permettre au Player de traverser la plateforme vers le bas
-        //        // - on peut pas couper le rigibody ou le 
+        //        // - on peut pas couper le rigibody 
+        //        // - On peut essayer en inversant l'angle du platform effector et en le rendant actif que contre le player
         //    }
 
         //}
