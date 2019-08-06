@@ -10,19 +10,45 @@ public class Player : MonoBehaviour
     [SerializeField] float playerSpeed = 5f;
     [SerializeField] float jumpSpeed = 10f;
     [SerializeField] float climbSpeed = 5f;
+
+    // en fait a priori ... ya pas besoin
+    //float playerSpeedRst;
+    //float jumpSpeedRst;
+    //float climbSpeedRst;
+
+    [SerializeField] float playerSpeedBlob = 2f;
+    //[SerializeField] float jumpSpeedBlob = 0f;
+    //[SerializeField] float climbSpeedBlob = 0f;
+
+
+    //gestion de la fatigue
     [SerializeField] public int staminaMax = 1000;
     [SerializeField] public int staminaCurrent;
-    [SerializeField] Vector2 deathkick = new Vector2(100f, 8f);
+    [SerializeField] float fatigueFactor = 1f;
+    [SerializeField] Vector2 deathkick = new Vector2(5f, 8f);
+    [SerializeField] bool blobified = false;
+    public float keyPressed;
+    [SerializeField] bool blobPeuMarcherEnAvant = true;
+    [SerializeField] public float vitesseDeGlisseDuBlob = 3f;
+    [SerializeField] public float nombreDeSecondesEnAvantDuBlobMax = 4f;
+    public float nombreDeSecondesEnAvantDuBlobRestantCurrent;
+    [SerializeField] public float tempsDeLatenceAvantDePouvoirRemarcherEnAvant = 5f;
+    float timer = 0f;
 
+
+    //valeur pour décadrer l'echelle quand on la porte ... ils ont pas trop bon
     [SerializeField] float depX = 0.5f;
     [SerializeField] float depY = 0.5f;
     [SerializeField] float rotZ = 15f;
     [SerializeField] GameObject holdingPoint;
+
+    //et quand on la pose ...ils sont bons
     [SerializeField] float dep2X = 0.5f;
     [SerializeField] float dep2Y = 0.5f;
-    [SerializeField] float fatigueFactor = 1f;
+
+    //Var pour Gestion des animss en l'air
     int lesCollisions = 0;
-    public float keyPressed;
+
 
     //State
     bool isAlive = true;
@@ -40,13 +66,23 @@ public class Player : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        //caching
         myRigidBody = GetComponent<Rigidbody2D>();
         myAnimator = GetComponent<Animator>();
         myBodyCollider = GetComponent<CapsuleCollider2D>();
         gravityScaleAtStart = myRigidBody.gravityScale;
         myFeet = GetComponent<BoxCollider2D>();
         GameObject lechelle = GameObject.FindGameObjectWithTag("Echelle");
+
+        //init var
         staminaCurrent = staminaMax;
+        //playerSpeedRst = playerSpeed;
+        //jumpSpeedRst = jumpSpeed;
+        //climbSpeedRst = climbSpeed;
+
+        nombreDeSecondesEnAvantDuBlobRestantCurrent = nombreDeSecondesEnAvantDuBlobMax;
+
+
     }
 
     // Update is called once per frame
@@ -57,6 +93,12 @@ public class Player : MonoBehaviour
             return;
         }
 
+        if (blobified)
+        {
+            BlobMoonWalk();
+            FlipSprite();
+            return;
+        }
 
         Run();
         FlipSprite();
@@ -75,6 +117,62 @@ public class Player : MonoBehaviour
 
     }
 
+    private void BlobMoonWalk()
+    {
+        float controlThrow = CrossPlatformInputManager.GetAxis("Horizontal"); // +1 to -1
+
+        if (controlThrow == 0)
+        {
+            //sliding if static
+            myRigidBody.velocity = new Vector2(-1 * vitesseDeGlisseDuBlob, myRigidBody.velocity.y);
+            return;
+        }
+
+
+        Vector2 playerVelocity = new Vector2(controlThrow * playerSpeedBlob, myRigidBody.velocity.y);
+
+        bool playerHasHorizontalSpeed = Mathf.Abs(myRigidBody.velocity.x) > Mathf.Epsilon;
+
+        timer += Time.deltaTime;
+        Debug.Log("latence = " + timer);
+
+        //
+        // $$$!!!$$$  Ca merde par  là ... je n'arrive pas à le faire avancer de nombreDeSecondesEnAvantDuBlobMax et à devoir attendre tempsDeLatenceAvantDePouvoirRemarcherEnAvant avant de pouvoir recommencer
+        // Pour l'instant ça marche par une lutte du Drag v/s la vitesse du joueur
+        //
+        if (playerHasHorizontalSpeed)
+        {
+            if (myRigidBody.velocity.x <= 0)
+            {
+                myRigidBody.velocity = playerVelocity;
+            }
+            else
+            {
+                if (blobPeuMarcherEnAvant)
+                {
+                    if (timer >= tempsDeLatenceAvantDePouvoirRemarcherEnAvant)
+                    {timer = 0f;
+
+                        if (nombreDeSecondesEnAvantDuBlobRestantCurrent < nombreDeSecondesEnAvantDuBlobMax)
+                        {
+                            Debug.Log("secondes restantes = " + nombreDeSecondesEnAvantDuBlobRestantCurrent);
+                            myRigidBody.velocity = playerVelocity;
+                            nombreDeSecondesEnAvantDuBlobRestantCurrent += Time.deltaTime;
+                            
+
+
+                        }
+                        else
+                        {
+                            nombreDeSecondesEnAvantDuBlobRestantCurrent = nombreDeSecondesEnAvantDuBlobMax;
+                            
+
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     //Compter les collisions pour être sur que je ne suis sur rien...
     private void OnCollisionEnter2D(Collision2D collision)
@@ -227,7 +325,7 @@ public class Player : MonoBehaviour
     private void Jump()
     {
 
-        
+
         if (lesCollisions > 0)
 
         {
@@ -247,16 +345,20 @@ public class Player : MonoBehaviour
     {
         if (myBodyCollider.IsTouchingLayers(LayerMask.GetMask("Enemy")))
         {
-            isAlive = false;
-            NettoyageAnimator();
-            myAnimator.SetTrigger("Dying");
-            GetComponent<Rigidbody2D>().velocity = deathkick;
-
+            Died();
         }
+
 
     }
 
-   
+    private void Died()
+    {
+        isAlive = false;
+        NettoyageAnimator();
+        myAnimator.SetTrigger("Dying");
+        GetComponent<Rigidbody2D>().velocity = deathkick;
+    }
+
 
     private void CompteFatigue()
     {
@@ -269,6 +371,21 @@ public class Player : MonoBehaviour
         //mettre ici les malus d'efforts supplémentaires 
         staminaCurrent = staminaMax - fatigue;
 
+        if (staminaCurrent <= 0)
+        {
+
+            Blobification();
+        }
+
+    }
+
+    private void Blobification()
+    {
+        blobified = true;
+        myAnimator.SetBool("Blobified", true);
+
+
+
     }
 
     public int Stamina()
@@ -279,6 +396,12 @@ public class Player : MonoBehaviour
     public void FillingStamina(int staminaBoost)
     {
         keyPressed = 0;
+
+        //deblobification
+        blobified = false;
+        myAnimator.SetBool("Blobified", false);
+
+        //
         staminaCurrent = Mathf.Clamp((staminaCurrent + staminaBoost), 0, staminaMax);
         Debug.Log("-----------------------------------------Stamina = " + staminaCurrent);
     }
@@ -302,7 +425,7 @@ public class Player : MonoBehaviour
 
     //}
 
-    
+
 
     //public void StopFillingStamina
     //{

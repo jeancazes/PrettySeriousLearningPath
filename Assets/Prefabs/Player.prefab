@@ -183,17 +183,24 @@ MonoBehaviour:
   playerSpeed: 5
   jumpSpeed: 10
   climbSpeed: 5
-  staminaMax: 2000
+  playerSpeedBlob: 4.3
+  staminaMax: 500
   staminaCurrent: 1000
-  deathkick: {x: -10, y: 10}
+  fatigueFactor: 2
+  deathkick: {x: -5, y: 5}
+  blobified: 0
+  keyPressed: 0
+  blobPeuMarcherEnAvant: 1
+  vitesseDeGlisseDuBlob: 4
+  nombreDeSecondesEnAvantDuBlobMax: 2
+  nombreDeSecondesEnAvantDuBlobRestantCurrent: 0
+  tempsDeLatenceAvantDePouvoirRemarcherEnAvant: 5
   depX: -0.2
   depY: 0.2
   rotZ: 15
   holdingPoint: {fileID: 8777236300124868896}
   dep2X: 0.5
   dep2Y: 0.5
-  fatigueFactor: 2
-  keyPressed: 0
 --- !u!1 &8777236300124868896
 GameObject:
   m_ObjectHideFlags: 0
