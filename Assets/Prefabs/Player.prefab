@@ -180,11 +180,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2a9474f3a800a347a7d4bb78bd00026, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Joystick: {fileID: 0}
+  isMobile: 1
   playerSpeed: 5
   jumpSpeed: 10
   climbSpeed: 5
   playerSpeedBlob: 4.3
-  staminaMax: 500
+  staminaMax: 2000
   staminaCurrent: 1000
   fatigueFactor: 2
   deathkick: {x: -5, y: 5}
@@ -197,6 +199,7 @@ MonoBehaviour:
   tempsDeLatenceAvantDePouvoirRemarcherEnAvant: 5
   depX: -0.2
   depY: 0.2
+  rdepY: 0.5
   rotZ: 15
   holdingPoint: {fileID: 8777236300124868896}
   dep2X: 0.5

@@ -1,0 +1,16 @@
+{
+"companyName": "DefaultCompany",
+"productName": "PrettySeriousLearningPath",
+"productVersion": "0.1",
+"dataUrl": "_builds.data.unityweb",
+"wasmCodeUrl": "_builds.wasm.code.unityweb",
+"wasmFrameworkUrl": "_builds.wasm.framework.unityweb",
+"graphicsAPI": ["WebGL 2.0","WebGL 1.0"],
+"webglContextAttributes": {"preserveDrawingBuffer": false},
+"splashScreenStyle": "Light",
+"backgroundColor": "#828080",
+"cacheControl": {"default": "must-revalidate"},
+"developmentBuild": false,
+"multithreading": false,
+"unityVersion": "2019.2.0f1"
+}

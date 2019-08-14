@@ -3,13 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviour
 {
     //config
+    public FixedJoystick Joystick;
+    [SerializeField] public bool isMobile = true;
+    private float controlThrowX;
+    private float controlThrowY;
+
     [SerializeField] float playerSpeed = 5f;
     [SerializeField] float jumpSpeed = 10f;
     [SerializeField] float climbSpeed = 5f;
+
 
     // en fait a priori ... ya pas besoin
     //float playerSpeedRst;
@@ -39,8 +46,10 @@ public class Player : MonoBehaviour
     //valeur pour décadrer l'echelle quand on la porte ... ils ont pas trop bon
     [SerializeField] float depX = 0.5f;
     [SerializeField] float depY = 0.5f;
+    [SerializeField] float rdepY = 0.5f;
     [SerializeField] float rotZ = 15f;
     [SerializeField] GameObject holdingPoint;
+    [SerializeField] Canvas CanvasJoystick;
 
     //et quand on la pose ...ils sont bons
     [SerializeField] float dep2X = 0.5f;
@@ -54,6 +63,7 @@ public class Player : MonoBehaviour
     bool isAlive = true;
 
     //cached Component references
+
     Rigidbody2D myRigidBody;
     Animator myAnimator;
     CapsuleCollider2D myBodyCollider;
@@ -81,6 +91,8 @@ public class Player : MonoBehaviour
         //climbSpeedRst = climbSpeed;
 
         nombreDeSecondesEnAvantDuBlobRestantCurrent = nombreDeSecondesEnAvantDuBlobMax;
+
+       
 
 
     }
@@ -117,24 +129,49 @@ public class Player : MonoBehaviour
 
     }
 
+    public void TestMobile()
+    {
+        if (isMobile)
+        {
+            CanvasJoystick.enabled = false;
+            isMobile = false;
+        }
+        else
+        {
+            CanvasJoystick.enabled = true;
+            isMobile = true;
+        }
+    }
+
     private void BlobMoonWalk()
     {
-        float controlThrow = CrossPlatformInputManager.GetAxis("Horizontal"); // +1 to -1
+        if (isMobile)
+        {
 
-        if (controlThrow == 0)
+            controlThrowX = Joystick.Horizontal; // +1 to -1
+
+
+        }
+        else
+        {
+            controlThrowX = CrossPlatformInputManager.GetAxis("Horizontal"); // +1 to -1
+        }
+
+
+        if (controlThrowX == 0)
         {
             //sliding if static
             myRigidBody.velocity = new Vector2(-1 * vitesseDeGlisseDuBlob, myRigidBody.velocity.y);
             return;
         }
+        Debug.Log(" ---------------------------after blob = " + controlThrowX);
 
-
-        Vector2 playerVelocity = new Vector2(controlThrow * playerSpeedBlob, myRigidBody.velocity.y);
+        Vector2 playerVelocity = new Vector2(controlThrowX * playerSpeedBlob, myRigidBody.velocity.y);
 
         bool playerHasHorizontalSpeed = Mathf.Abs(myRigidBody.velocity.x) > Mathf.Epsilon;
 
         timer += Time.deltaTime;
-        Debug.Log("latence = " + timer);
+        //Debug.Log("latence = " + timer);
 
         //
         // $$$!!!$$$  Ca merde par  là ... je n'arrive pas à le faire avancer de nombreDeSecondesEnAvantDuBlobMax et à devoir attendre tempsDeLatenceAvantDePouvoirRemarcherEnAvant avant de pouvoir recommencer
@@ -151,21 +188,22 @@ public class Player : MonoBehaviour
                 if (blobPeuMarcherEnAvant)
                 {
                     if (timer >= tempsDeLatenceAvantDePouvoirRemarcherEnAvant)
-                    {timer = 0f;
+                    {
+                        timer = 0f;
 
                         if (nombreDeSecondesEnAvantDuBlobRestantCurrent < nombreDeSecondesEnAvantDuBlobMax)
                         {
-                            Debug.Log("secondes restantes = " + nombreDeSecondesEnAvantDuBlobRestantCurrent);
+                            //Debug.Log("secondes restantes = " + nombreDeSecondesEnAvantDuBlobRestantCurrent);
                             myRigidBody.velocity = playerVelocity;
                             nombreDeSecondesEnAvantDuBlobRestantCurrent += Time.deltaTime;
-                            
+
 
 
                         }
                         else
                         {
                             nombreDeSecondesEnAvantDuBlobRestantCurrent = nombreDeSecondesEnAvantDuBlobMax;
-                            
+
 
                         }
                     }
@@ -189,7 +227,7 @@ public class Player : MonoBehaviour
     // Pour attrapper et relacher l'echelle
     // des améliorations à apporter (pas toujours bien en place !)
 
-    private void Grab()
+    public void Grab()
     {
         if (grabbed)
         {
@@ -241,9 +279,18 @@ public class Player : MonoBehaviour
             return;
         }
 
+        if (isMobile)
+        {
 
-        float controlthrow = CrossPlatformInputManager.GetAxis("Vertical");
-        Vector2 climbVelocity = new Vector2(myRigidBody.velocity.x, controlthrow * climbSpeed);
+            float controlThrowY = Joystick.Vertical; // +1 to -1
+
+        }
+        else
+        {
+            float controlThrowY = CrossPlatformInputManager.GetAxis("Vertical"); // +1 to -1
+        }
+
+        Vector2 climbVelocity = new Vector2(myRigidBody.velocity.x, controlThrowY * climbSpeed);
         myRigidBody.velocity = climbVelocity;
 
         myRigidBody.gravityScale = 0;
@@ -256,8 +303,23 @@ public class Player : MonoBehaviour
 
     private void Run()
     {
-        float controlThrow = CrossPlatformInputManager.GetAxis("Horizontal"); // +1 to -1
-        Vector2 playerVelocity = new Vector2(controlThrow * playerSpeed, myRigidBody.velocity.y);
+
+        Debug.Log("------------------Joystick " + Joystick.Horizontal);
+        if (isMobile)
+        {
+
+
+            controlThrowX = Joystick.Horizontal; // +1 to -1
+            Debug.Log("------------------dans run avant " + controlThrowX);
+        }
+        else
+        {
+            controlThrowX = CrossPlatformInputManager.GetAxis("Horizontal"); // +1 to -1
+        }
+
+        Debug.Log("------------------dans run après " + controlThrowX);
+
+        Vector2 playerVelocity = new Vector2(controlThrowX * playerSpeed, myRigidBody.velocity.y);
         myRigidBody.velocity = playerVelocity;
 
         bool playerHasHorizontalSpeed = Mathf.Abs(myRigidBody.velocity.x) > Mathf.Epsilon;
@@ -322,23 +384,29 @@ public class Player : MonoBehaviour
 
     }
 
+
     private void Jump()
     {
-
-
-        if (lesCollisions > 0)
-
+        if (!isMobile)
         {
             if (CrossPlatformInputManager.GetButtonDown("Jump"))
             {
-                Vector2 jumpVelocityToAdd = new Vector2(0f, jumpSpeed);
-                myRigidBody.velocity += jumpVelocityToAdd;
-                myAnimator.SetBool("Jumping", true);
+                Jumping();
             }
         }
 
 
 
+    }
+
+    public void Jumping()
+    {
+        if (lesCollisions > 0)
+        {
+            Vector2 jumpVelocityToAdd = new Vector2(0f, jumpSpeed);
+            myRigidBody.velocity += jumpVelocityToAdd;
+            myAnimator.SetBool("Jumping", true);
+        }
     }
 
     public void Die()
@@ -403,7 +471,7 @@ public class Player : MonoBehaviour
 
         //
         staminaCurrent = Mathf.Clamp((staminaCurrent + staminaBoost), 0, staminaMax);
-        Debug.Log("-----------------------------------------Stamina = " + staminaCurrent);
+        //Debug.Log("-----------------------------------------Stamina = " + staminaCurrent);
     }
 
     //public void FillingStamina(int staminaBoost)

@@ -26,7 +26,7 @@ public class FillStamina : MonoBehaviour
     {
         if (pompeOuverte)
         {
-        print("collision");
+        //print("collision");
         collision.GetComponent<Player>().FillingStamina(staminaBoost);
         GaugeAnimator.SetBool("IsFillingStamina", true);
         pompeOuverte = false;

@@ -23,7 +23,7 @@ public class AfficheFatigue : MonoBehaviour
     void Update()
     {
         staminaCurrent = leJoueur.GetComponent<Player>().Stamina();
-        print (message: "The current stamina is = "+ staminaCurrent);
+        //print (message: "The current stamina is = "+ staminaCurrent);
         leSlider.value = staminaCurrent;
         
 
