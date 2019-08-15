@@ -9,7 +9,7 @@ public class Player : MonoBehaviour
 {
     //config
     public FixedJoystick Joystick;
-    [SerializeField] public bool isMobile = true;
+    [SerializeField] public static bool isMobile = true;
     private float controlThrowX;
     private float controlThrowY;
 
@@ -100,6 +100,10 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        Debug.Log("X" + controlThrowX);
+        Debug.Log("Y" + controlThrowY);
+
         if (!isAlive)
         {
             return;
@@ -111,7 +115,8 @@ public class Player : MonoBehaviour
             FlipSprite();
             return;
         }
-
+        else
+        {
         Run();
         FlipSprite();
         Jump();
@@ -120,6 +125,9 @@ public class Player : MonoBehaviour
         GestionAnimations();
         CompteFatigue();
         Die();
+        }
+
+
 
         if (Input.GetKeyDown("h"))
         {
@@ -164,7 +172,7 @@ public class Player : MonoBehaviour
             myRigidBody.velocity = new Vector2(-1 * vitesseDeGlisseDuBlob, myRigidBody.velocity.y);
             return;
         }
-        Debug.Log(" ---------------------------after blob = " + controlThrowX);
+        //Debug.Log(" ---------------------------after blob = " + controlThrowX);
 
         Vector2 playerVelocity = new Vector2(controlThrowX * playerSpeedBlob, myRigidBody.velocity.y);
 
@@ -288,8 +296,10 @@ public class Player : MonoBehaviour
         else
         {
             float controlThrowY = CrossPlatformInputManager.GetAxis("Vertical"); // +1 to -1
+            Debug.Log("--------------------YY11-" + controlThrowY);
         }
 
+        Debug.Log("--------------------YYYY-"+controlThrowY);
         Vector2 climbVelocity = new Vector2(myRigidBody.velocity.x, controlThrowY * climbSpeed);
         myRigidBody.velocity = climbVelocity;
 
@@ -304,20 +314,20 @@ public class Player : MonoBehaviour
     private void Run()
     {
 
-        Debug.Log("------------------Joystick " + Joystick.Horizontal);
+        //Debug.Log("------------------Joystick " + Joystick.Horizontal);
         if (isMobile)
         {
 
 
             controlThrowX = Joystick.Horizontal; // +1 to -1
-            Debug.Log("------------------dans run avant " + controlThrowX);
+            //Debug.Log("------------------dans run avant " + controlThrowX);
         }
         else
         {
             controlThrowX = CrossPlatformInputManager.GetAxis("Horizontal"); // +1 to -1
         }
 
-        Debug.Log("------------------dans run après " + controlThrowX);
+        //Debug.Log("------------------dans run après " + controlThrowX);
 
         Vector2 playerVelocity = new Vector2(controlThrowX * playerSpeed, myRigidBody.velocity.y);
         myRigidBody.velocity = playerVelocity;
